@@ -1,0 +1,21 @@
+alpha402 — 1-minute pitch script
+
+① Title · 0:00–0:06
+
+▎ "This is alpha402 — market intelligence, priced for machines."
+
+② Problem · 0:06–0:17
+
+▎ "Right now, an AI trading agent is blind and handcuffed: it can't pay for live market data, and it can't place a trade. A human still does both."
+
+③ Solution · 0:17–0:39
+
+▎ "alpha402 is a market built for machines. The agent queries on-chain signals through The Graph, reads them with AI, pays per query with x402 on Hedera, then executes the swap on Uniswap — no human in the loop. Data settles on Hedera; the trade runs on Uniswap."
+
+④ Live · 0:39–0:53
+
+▎ "And it's live. Watch an agent ask a question, subscribe on Hedera for an on-chain pass, buy its own data, get an AI-recommended pool, and make a real Uniswap swap — every transaction verifiable on HashScan."
+
+⑤ Close · 0:53–1:00
+
+▎ "That's alpha402 — the market that sells alpha to machines, and lets them act on it. On-chain, end to end."

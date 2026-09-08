@@ -1,0 +1,238 @@
+<!doctype html>
+<!--
+  alpha402 — 1-minute pitch deck (own visual language, big-type editorial)
+  Self-contained: Space Grotesk sits next to this file, no external URLs.
+  →/space next · ←/backspace prev · F fullscreen · S speaker notes · 1-5 jump
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>alpha402 · Market intelligence, priced for machines</title>
+<style>
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal; font-weight: 300 700; font-display: block;
+  src: url('./SpaceGrotesk.ttf') format('truetype-variations');
+}
+:root {
+  --font: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+  --canvas: #f6f5f3;
+  --surface: #ffffff;
+  --ink: #14110f;
+  --ink-2: #4a463f;
+  --ink-3: #8a857c;
+  --orange: #ee7b3d;
+  --purple: #b04fc7;
+  --blue: #328efa;
+  --green: #35b981;
+  --border: rgba(20,17,15,0.09);
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+  --shadow: 0 2px 8px rgba(0,0,0,0.06), 0 18px 50px rgba(0,0,0,0.10);
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  height: 100%; font-family: var(--font); color: var(--ink);
+  -webkit-font-smoothing: antialiased; overflow: hidden;
+  background: var(--canvas);
+}
+/* ambient color field — 10 soft glows drifting behind the slides (like the landing) */
+#blobs { position: fixed; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; }
+#blobs .blob { position: absolute; border-radius: 50%; transform: translate(-50%,-50%); filter: blur(64px); animation-name: floaty; animation-timing-function: ease-in-out; animation-iteration-count: infinite; }
+@keyframes floaty {
+  0%   { transform: translate(-50%,-50%) translate(0,0); }
+  25%  { transform: translate(-50%,-50%) translate(38px,-30px); }
+  50%  { transform: translate(-50%,-50%) translate(-26px,32px); }
+  75%  { transform: translate(-50%,-50%) translate(28px,22px); }
+  100% { transform: translate(-50%,-50%) translate(0,0); }
+}
+
+#viewport { position: fixed; inset: 0; display: grid; place-items: center; z-index: 1; }
+#stage {
+  width: 1600px; height: 900px; position: relative; overflow: hidden;
+  transform-origin: center; background: transparent;
+}
+
+/* every slide: a big statement, generous margins, vertically centred */
+.slide {
+  position: absolute; inset: 0;
+  padding: 118px 118px 104px;
+  display: flex; flex-direction: column; justify-content: center; gap: 34px;
+  opacity: 0; visibility: hidden; transform: translateY(12px);
+  transition: opacity 360ms var(--ease), transform 360ms var(--ease);
+}
+.slide.active { opacity: 1; visibility: visible; transform: none; }
+
+/* type */
+.kicker { font-size: 17px; font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; color: var(--ink-3); font-feature-settings: 'tnum' 1; }
+.display { font-size: 92px; font-weight: 700; line-height: 1.02; letter-spacing: -0.02em; max-width: 21ch; text-wrap: balance; }
+.display.big { font-size: 112px; line-height: 0.98; }
+.lead { font-size: 30px; font-weight: 400; line-height: 1.4; color: var(--ink-2); max-width: 34ch; }
+.o { color: var(--orange); } .p { color: var(--purple); } .g { color: var(--blue); } .dim { color: var(--ink-3); } .ink { color: var(--ink); }
+.grad { background: linear-gradient(96deg, var(--orange), var(--purple)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+
+/* brand mark */
+.brand { position: absolute; top: 64px; left: 118px; display: flex; align-items: center; gap: 16px; }
+.a-mark { width: 56px; height: 56px; border-radius: 14px; background: var(--ink); color: #fff; display: grid; place-items: center; font-size: 33px; font-weight: 700; box-shadow: var(--shadow-sm); }
+.wm { font-size: 30px; font-weight: 700; letter-spacing: -0.02em; }
+
+/* bottom mono strip */
+.foot { position: absolute; left: 118px; right: 118px; bottom: 66px; font-size: 19px; color: var(--ink-3); letter-spacing: 0.01em; }
+.foot b { color: var(--ink); font-weight: 600; }
+.foot .sep { color: var(--border); margin: 0 14px; }
+
+/* the loop, as an inline flow of chips (not node cards) */
+.flow { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.fpill { display: inline-flex; align-items: center; gap: 9px; padding: 12px 20px; border-radius: 999px; background: var(--surface); border: 1px solid var(--border); box-shadow: var(--shadow-sm); font-size: 24px; font-weight: 600; }
+.fpill.pay { background: rgba(176,79,199,0.10); border-color: rgba(176,79,199,0.28); color: var(--purple); }
+.fpill.act { background: rgba(238,123,61,0.10); border-color: rgba(238,123,61,0.30); color: var(--orange); }
+.farr { color: var(--ink-3); font-size: 26px; }
+
+/* builds */
+[data-frag] { opacity: 0; transform: translateY(8px); transition: opacity 320ms var(--ease), transform 320ms var(--ease); }
+[data-frag].on { opacity: 1; transform: none; }
+
+/* proof pills on close */
+.proof { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 8px; }
+.pill { display: inline-flex; align-items: center; gap: 10px; padding: 11px 18px; border-radius: 999px; background: var(--surface); border: 1px solid var(--border); box-shadow: var(--shadow-sm); font-size: 18px; color: var(--ink-2); }
+.pill .dot { width: 8px; height: 8px; border-radius: 50%; }
+.pill .dot.npm { background: #CB3837; } .pill .dot.o { background: var(--orange); } .pill .dot.p { background: var(--purple); } .pill .dot.g { background: var(--blue); }
+.pill b { color: var(--ink); font-weight: 600; }
+
+/* chrome */
+#counter { position: absolute; right: 40px; bottom: 30px; font-size: 15px; color: var(--ink-3); font-variant-numeric: tabular-nums; letter-spacing: 0.06em; z-index: 20; }
+#notes { position: fixed; left: 0; right: 0; bottom: 0; background: #141210; color: #edeae6; padding: 20px 28px; font-size: 15px; line-height: 1.55; border-top: 2px solid var(--orange); transform: translateY(101%); transition: transform 240ms var(--ease); z-index: 100; max-height: 42vh; overflow-y: auto; }
+#notes.open { transform: none; }
+#notes .n-title { font-size: 12px; text-transform: uppercase; letter-spacing: 0.14em; color: rgba(255,255,255,0.55); margin-bottom: 9px; }
+#notes .vo { color: #fff; font-size: 17px; }
+#hint { position: fixed; left: 20px; bottom: 16px; font-size: 12px; color: rgba(0,0,0,0.32); letter-spacing: 0.04em; z-index: 20; transition: opacity 400ms var(--ease); }
+</style>
+</head>
+<body>
+<div id="blobs"></div>
+<div id="viewport">
+  <div id="stage">
+
+    <!-- 1. TITLE -->
+    <section class="slide s-title" data-notes='{"vo":"This is alpha402 — market intelligence, priced for machines.","t":"0:00–0:06"}'>
+      <div class="brand"><div class="a-mark">α</div><span class="wm">alpha402</span></div>
+      <div class="display" style="font-size:104px; max-width:16ch;">Market intelligence,<br><span class="grad">priced for machines.</span></div>
+      <div class="lead">On-chain signals queried via <span class="g">The Graph</span>, priced on <span class="p">Hedera</span>, acted on via <span class="o">Uniswap</span>.</div>
+      <div class="foot">npm <b>alpha402</b><span class="sep">·</span>Hedera <b>testnet</b><span class="sep">·</span>query <b>The Graph</b><span class="sep">·</span>Uniswap <b>Unichain Sepolia</b></div>
+    </section>
+
+    <!-- 2. PROBLEM -->
+    <section class="slide" data-notes='{"vo":"Right now, an AI trading agent is blind and handcuffed: it cannot pay for live market data, and it cannot place a trade. A human still does both.","t":"0:06–0:17"}'>
+      <div class="kicker">01 · the problem</div>
+      <div class="display big">AI agents are <span class="o">blind</span><br>and <span class="p">handcuffed.</span></div>
+      <div class="lead" data-frag="1">A trading agent can't pay for live market data, and can't place the trade. A human still does both.</div>
+    </section>
+
+    <!-- 3. SOLUTION -->
+    <section class="slide" data-notes='{"vo":"alpha402 is a market built for machines. The agent queries on-chain signals through The Graph, reads them with AI, pays per query with x402 on Hedera, then executes the swap on Uniswap — no human in the loop. Data settles on Hedera; the trade runs on Uniswap.","t":"0:17–0:39"}'>
+      <div class="kicker">02 · alpha402</div>
+      <div class="display">A market for machines:<br>pay for the read, act on it.</div>
+      <div class="lead" data-frag="1" style="max-width:64ch">The agent queries signals via <span class="g">The Graph</span>, reads them with AI,<br>pays on <span class="p">Hedera x402</span>, then swaps on <span class="o">Uniswap</span>.<br>No human in the loop.</div>
+      <div class="flow" data-frag="2">
+        <span class="fpill">🦄 Uniswap</span><span class="farr">→</span>
+        <span class="fpill">◈ The Graph</span><span class="farr">→</span>
+        <span class="fpill">◆ AI brief</span><span class="farr">→</span>
+        <span class="fpill pay">ℏ Hedera</span><span class="farr">→</span>
+        <span class="fpill act">🦄 Invest</span>
+      </div>
+      <div class="foot" data-frag="3">settles with <b>x402</b><span class="sep">·</span><b>HTS pass</b><span class="sep">·</span><b>HCS receipt</b><span class="sep">·</span>verifiable on HashScan</div>
+    </section>
+
+    <!-- 4. LIVE -->
+    <section class="slide" data-notes='{"vo":"And it is live. Watch an agent ask a question, subscribe on Hedera for an on-chain pass, buy its own data, get an AI-recommended pool, and make a real Uniswap swap — every transaction verifiable on HashScan.","t":"0:39–0:53","shots":["Landing: ask a question, subscribe (HTS pass) on Hedera.|3s","Agent Live: the agent pays for feeds itself, out loud.|3s","Ask &quot;which pool?&quot; -> pool card -> Invest -> real Uniswap swap.|4s","Transactions: read back from the Hedera mirror node.|2s"]}'>
+      <div class="kicker">03 · live</div>
+      <div class="display">Watch an agent pay for <span class="p">alpha</span><br>and <span class="o">invest</span> on it.</div>
+      <div class="lead" data-frag="1">Ask → subscribe on Hedera → the agent buys the data itself → recommends a pool → swaps on Uniswap.</div>
+    </section>
+
+    <!-- 5. CLOSE -->
+    <section class="slide s-title" data-notes='{"vo":"That is alpha402 — the market that sells alpha to machines, and lets them act on it. On-chain, end to end.","t":"0:53–1:00"}'>
+      <div class="brand"><div class="a-mark">α</div><span class="wm">alpha402</span></div>
+      <div class="display" style="max-width:24ch;">The market that sells <span class="o">alpha</span> to machines <br>and lets them <span class="p">act</span> on it.</div>
+      <div class="proof">
+        <span class="pill"><span class="dot npm"></span>npm <b>alpha402</b></span>
+        <span class="pill"><span class="dot p"></span>Hedera <b>x402 · HTS · HCS</b></span>
+        <span class="pill"><span class="dot g"></span>query <b>The Graph</b></span>
+        <span class="pill"><span class="dot o"></span>Uniswap <b>Unichain Sepolia</b></span>
+      </div>
+    </section>
+
+    <div id="counter">1 / 5</div>
+  </div>
+</div>
+
+<div id="notes"></div>
+<div id="hint">← → navigate · F fullscreen · S notes</div>
+
+<script>
+/* 10 soft color glows, scattered + drifting, behind the slides (matches the landing) */
+(function () {
+  var wrap = document.getElementById('blobs');
+  var colors = ['rgba(238,123,61,0.30)','rgba(176,79,199,0.28)','rgba(236,72,153,0.22)','rgba(238,123,61,0.22)','rgba(176,79,199,0.20)'];
+  for (var i = 0; i < 7; i++) {
+    var b = document.createElement('span'); b.className = 'blob';
+    var size = 320 + Math.random() * 380;
+    b.style.left = (Math.random() * 100) + '%';
+    b.style.top = (Math.random() * 100) + '%';
+    b.style.width = b.style.height = size + 'px';
+    b.style.background = 'radial-gradient(circle,' + colors[i % colors.length] + ',transparent 70%)';
+    b.style.animationDuration = (16 + Math.random() * 14) + 's';
+    b.style.animationDelay = (-Math.random() * 12) + 's';
+    wrap.appendChild(b);
+  }
+})();
+(function () {
+  var stage = document.getElementById('stage');
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var counter = document.getElementById('counter');
+  var notesEl = document.getElementById('notes');
+  var hint = document.getElementById('hint');
+  var i = 0, f = 0, notesOpen = false;
+
+  function maxFrag(s) { var n = 0; s.querySelectorAll('[data-frag]').forEach(function (el) { n = Math.max(n, parseInt(el.dataset.frag, 10) || 0); }); return n; }
+  function paintFrags() { slides[i].querySelectorAll('[data-frag]').forEach(function (el) { el.classList.toggle('on', (parseInt(el.dataset.frag, 10) || 0) <= f); }); }
+  function fit() { var pad = notesOpen ? 0.72 : 1; var s = Math.min(window.innerWidth / 1600, (window.innerHeight * pad) / 900); stage.style.transform = 'scale(' + s + ')'; }
+  function renderNotes() {
+    var raw = slides[i].dataset.notes; if (!raw) { notesEl.innerHTML = ''; return; }
+    var n; try { n = JSON.parse(raw); } catch (e) { return; }
+    var html = '<div class="n-title">Slide ' + (i + 1) + ' · ' + (n.t || '') + '</div><div class="vo">' + n.vo + '</div>';
+    if (n.shots) { html += '<ol style="margin:10px 0 0 20px; display:flex; flex-direction:column; gap:5px;">'; n.shots.forEach(function (s) { var p = s.split('|'); html += '<li>' + p[0] + ' <span style="color:var(--orange)">' + (p[1] || '') + '</span></li>'; }); html += '</ol>'; }
+    notesEl.innerHTML = html;
+  }
+  function show(n, atEnd) {
+    i = Math.max(0, Math.min(slides.length - 1, n));
+    f = atEnd ? maxFrag(slides[i]) : 0;
+    slides.forEach(function (s, k) { s.classList.toggle('active', k === i); });
+    counter.textContent = (i + 1) + ' / ' + slides.length;
+    paintFrags(); renderNotes();
+  }
+  function next() { if (f < maxFrag(slides[i])) { f++; paintFrags(); } else if (i < slides.length - 1) show(i + 1); }
+  function prev() { if (f > 0) { f--; paintFrags(); } else if (i > 0) show(i - 1, true); }
+  document.addEventListener('keydown', function (e) {
+    var k = e.key;
+    if (k === 'ArrowRight' || k === ' ' || k === 'PageDown' || k === 'ArrowDown') { e.preventDefault(); next(); }
+    else if (k === 'ArrowLeft' || k === 'Backspace' || k === 'PageUp' || k === 'ArrowUp') { e.preventDefault(); prev(); }
+    else if (k === 'Home') show(0);
+    else if (k === 'End') show(slides.length - 1, true);
+    else if (k === 'f' || k === 'F') { if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen(); }
+    else if (k === 's' || k === 'S') { notesOpen = !notesOpen; notesEl.classList.toggle('open', notesOpen); fit(); }
+    else if (k >= '1' && k <= '9') show(parseInt(k, 10) - 1);
+  });
+  document.addEventListener('click', function (e) { if (e.target.closest('a')) return; if (e.clientX > window.innerWidth / 2) next(); else prev(); });
+  window.addEventListener('resize', fit);
+  document.fonts.ready.then(fit); fit();
+  var h = (location.hash || '').replace('#', '').split('.');
+  var st = parseInt(h[0], 10);
+  show(isNaN(st) ? 0 : st - 1);
+  if (h[1]) { f = Math.min(parseInt(h[1], 10) || 0, maxFrag(slides[i])); paintFrags(); }
+  setTimeout(function () { hint.style.opacity = '0'; }, 4000);
+})();
+</script>
+</body>
+</html>
