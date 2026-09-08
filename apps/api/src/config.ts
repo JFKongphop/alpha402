@@ -39,6 +39,8 @@ export interface Config {
   client: { accountId?: string; key?: string };   // the demo buying agent
   graphApiKey?: string;
   uniswapApiKey?: string;
+  paxaApiKey?: string;
+  evm: { privateKey?: string; chainId: number };   // agent's EVM wallet for Uniswap swaps
   llm: { provider: string; openaiKey?: string; openaiModel: string; anthropicKey?: string; anthropicModel: string };
   feeds: Feed[];
   missing: string[];      // required keys that are unset — paid/live paths refuse until fixed
@@ -73,6 +75,13 @@ export function loadConfig(): Config {
     },
     graphApiKey: process.env.GRAPH_API_KEY,
     uniswapApiKey: process.env.UNISWAP_API_KEY,
+    paxaApiKey: process.env.PAXA_API_KEY,
+    evm: {
+      privateKey: process.env.EVM_AGENT_PRIVATE_KEY
+        ? (process.env.EVM_AGENT_PRIVATE_KEY.startsWith("0x") ? process.env.EVM_AGENT_PRIVATE_KEY : `0x${process.env.EVM_AGENT_PRIVATE_KEY}`)
+        : undefined,
+      chainId: Number(process.env.EVM_CHAIN_ID ?? 1301),
+    },
     llm: {
       provider,
       openaiKey: process.env.OPENAI_API_KEY,

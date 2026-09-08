@@ -7,6 +7,7 @@ import type { Config } from "./config.js";
 import { getBrief } from "./sources/brief.js";
 import { getRadar } from "./scheduler.js";
 import { makePaidFetch, decodePaymentResponseHeader } from "alpha402";
+import { quotePool, type PoolQuote } from "./sources/uniswap-trade.js";
 
 const TOOLS = [
   { type: "function", function: { name: "get_brief", description: "Get the latest AI market-trend brief (free).", parameters: { type: "object", properties: {} } } },
@@ -14,10 +15,11 @@ const TOOLS = [
   { type: "function", function: { name: "list_feeds", description: "List the feeds for sale and their prices.", parameters: { type: "object", properties: {} } } },
   { type: "function", function: { name: "pay_feed", description: "Pay per query (x402 on Hedera) for a per-call feed and get fresh data. Feeds: whale-radar, volume-radar, macro-news.", parameters: { type: "object", properties: { feed: { type: "string" }, units: { type: "number" } }, required: ["feed"] } } },
   { type: "function", function: { name: "subscribe", description: "Subscribe to alpha-brief: pay the period fee -> receive an HTS pass.", parameters: { type: "object", properties: { subscriber: { type: "string" } }, required: ["subscriber"] } } },
+  { type: "function", function: { name: "recommend_pool", description: "When the user asks what/where to invest, recommend a Uniswap pool and fetch a LIVE quote (buy the token with USDC on Unichain Sepolia). This shows the user a pool card with an Invest button. Available token to buy: WETH.", parameters: { type: "object", properties: { token: { type: "string", description: "token to buy, e.g. WETH" }, amountUsdc: { type: "number", description: "USDC amount to invest, default 1" } }, required: ["token"] } } },
 ];
 
 export interface ChatDeps { cfg: Config; apiBase: string }
-export interface ChatResult { reply: string; toolLog: string[] }
+export interface ChatResult { reply: string; toolLog: string[]; pool?: PoolQuote | null }
 
 export async function runChat(messages: any[], deps: ChatDeps, context?: { feed?: string; data?: any[] }): Promise<ChatResult> {
   const { cfg, apiBase } = deps;
@@ -26,12 +28,14 @@ export async function runChat(messages: any[], deps: ChatDeps, context?: { feed?
     ? makePaidFetch({ accountId: cfg.client.accountId, key: cfg.client.key })
     : null;
   const toolLog: string[] = [];
+  let lastPool: PoolQuote | null = null;
 
   const system = {
     role: "system",
     content:
       "You are Alpha, a market-intelligence agent for crypto traders. Answer from the free brief/radar when you can. " +
-      "When the user wants fresh or specific data, PAY per query (pay_feed) or subscribe on their behalf — payments settle on Hedera and you should mention the HashScan transaction when one comes back. Be concise, cite tokens and figures.",
+      "When the user wants fresh or specific data, PAY per query (pay_feed) or subscribe on their behalf — payments settle on Hedera and you should mention the HashScan transaction when one comes back. " +
+      "When the user asks WHAT or WHERE to invest, use recommend_pool to surface a live Uniswap pool + quote (the user then invests with one click). Be concise, cite tokens and figures.",
   };
   const convo: any[] = [system, ...messages];
   if (context?.feed && Array.isArray(context.data) && context.data.length) {
@@ -69,6 +73,16 @@ export async function runChat(messages: any[], deps: ChatDeps, context?: { feed?
       const res = await buyer(`${apiBase}/subscribe?subscriber=${args.subscriber}`, { method: "POST" });
       return `HTTP ${res.status}\n${(await res.text()).slice(0, 1500)}`;
     }
+    if (name === "recommend_pool") {
+      const token = String(args.token ?? "WETH").toUpperCase();
+      const amt = Number(args.amountUsdc ?? 1) || 1;
+      const q = await quotePool(cfg, "USDC", token, amt);
+      if (q.ok) {
+        lastPool = q;
+        return `Live quote: ${amt} USDC -> ${q.amountOut} ${token} (rate ${q.rate} ${token}/USDC, price impact ${q.priceImpact}%, route ${q.route}). A pool card with an Invest button is now shown to the user — tell them they can invest with one click on Uniswap.`;
+      }
+      return `Could not quote ${token}: ${q.error}. Only WETH is investable on the Unichain Sepolia testnet right now.`;
+    }
     return "unknown tool";
   }
 
@@ -90,7 +104,7 @@ export async function runChat(messages: any[], deps: ChatDeps, context?: { feed?
       }
       continue;
     }
-    return { reply: msg.content ?? "", toolLog };
+    return { reply: msg.content ?? "", toolLog, pool: lastPool };
   }
-  return { reply: "(stopped after several tool calls)", toolLog };
+  return { reply: "(stopped after several tool calls)", toolLog, pool: lastPool };
 }

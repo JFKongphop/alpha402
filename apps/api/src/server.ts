@@ -19,6 +19,7 @@ import { getBrief, generateBrief } from "./sources/brief.js";
 import { activityFeed } from "./sources/watcher.js";
 import { priceUsd } from "./sources/uniswap.js";
 import { chainHistory } from "./sources/mirror.js";
+import { executeSwap, walletStatus } from "./sources/uniswap-trade.js";
 import { startScheduler, getRadar } from "./scheduler.js";
 import { runChat } from "./chat.js";
 import { createAgent } from "./agent.js";
@@ -96,6 +97,50 @@ app.get("/price", async (c) => {
   const usd = await priceUsd({ apiKey: cfg.uniswapApiKey }, symbol);
   if (usd == null) return c.json({ error: `unknown token ${symbol}` }, 404);
   return c.json({ source: "uniswap", symbol, usd, t: Date.now() });
+});
+
+// text-to-speech (Paxa Labs) — proxied server-side so the key stays off the client.
+// Cached by text so repeats don't burn TTS credits.
+const speakCache = new Map<string, ArrayBuffer>();
+app.post("/speak", async (c) => {
+  if (!cfg.paxaApiKey) return c.json({ error: "tts not configured (set PAXA_API_KEY)" }, 503);
+  const body = await c.req.json().catch(() => ({}));
+  const text = String(body.text ?? "").slice(0, 1500).trim();
+  const voice = String(body.voice ?? "Latte");
+  if (!text) return c.json({ error: "missing text" }, 400);
+  const key = `${voice}::${text}`;
+  let buf = speakCache.get(key);
+  if (!buf) {
+    const r = await fetch("https://api.paxalabs.com/v1/tts", {
+      method: "POST",
+      headers: { "content-type": "application/json", authorization: `Bearer ${cfg.paxaApiKey}` },
+      body: JSON.stringify({ text, voice, model: "paxa-tts-flash-v1" }),
+    });
+    if (!r.ok) {
+      const t = await r.text().catch(() => "");
+      return c.json({ error: `paxa ${r.status}: ${t.slice(0, 200)}` }, 502);
+    }
+    buf = await r.arrayBuffer();
+    speakCache.set(key, buf);
+    if (speakCache.size > 200) speakCache.delete(speakCache.keys().next().value as string);
+  }
+  return new Response(buf, { headers: { "content-type": "audio/mpeg", "cache-control": "public, max-age=86400" } });
+});
+
+// agent EVM wallet funding status (read-only) — powers the pool card's indicator
+app.get("/wallet", async (c) => c.json(await walletStatus(cfg)));
+
+// invest on the agent's recommendation — a real Uniswap swap on Unichain Sepolia
+// (Hedera pays for the DATA; Uniswap is the INVESTMENT venue).
+app.post("/invest", async (c) => {
+  const body = await c.req.json().catch(() => ({}));
+  const token = String(body.token ?? "WETH").toUpperCase();
+  const amt = Math.max(0, Number(body.amountUsdc ?? 1)) || 1;
+  try {
+    return c.json(await executeSwap(cfg, "USDC", token, amt));
+  } catch (e) {
+    return c.json({ ok: false, error: String((e as Error).message ?? e) }, 502);
+  }
 });
 
 // operator-view snapshots for the dashboard (ungated — the seller's own control tower)
