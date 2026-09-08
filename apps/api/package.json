@@ -9,9 +9,11 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "alpha402": "workspace:*",
     "@hono/node-server": "^1.13.0",
     "@modelcontextprotocol/sdk": "^1.29.0",
+    "alpha402": "workspace:*",
+    "ethers": "^6.17.0",
+    "hak-uniswap-plugin": "^0.1.0",
     "hono": "^4.6.0",
     "zod": "^4.4.3"
   },
