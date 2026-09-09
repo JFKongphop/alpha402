@@ -19,7 +19,7 @@ export async function fetchNews(feeds: string[], limit = 15): Promise<NewsItem[]
   const out: NewsItem[] = [];
   for (const url of feeds) {
     try {
-      const r = await fetch(url, { headers: { "user-agent": "alpha-market/0.1" } });
+      const r = await fetch(url, { headers: { "user-agent": "alpha402/0.1" } });
       if (!r.ok) continue;
       const xml = await r.text();
       for (const m of xml.matchAll(/<item[\s\S]*?<\/item>/gi)) {

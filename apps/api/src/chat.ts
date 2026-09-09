@@ -1,5 +1,5 @@
 // Chat agent — talks to the data and PAYS for it on the user's behalf.
-// OpenAI tool-calling loop over the alpha-market feeds: free reads (brief/radar/
+// OpenAI tool-calling loop over the alpha402 feeds: free reads (brief/radar/
 // list) plus paid actions (pay_feed / subscribe) that settle on Hedera via x402.
 // The paid tools need HEDERA_CLIENT_* (the buyer account).
 

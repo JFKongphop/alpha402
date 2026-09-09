@@ -1,4 +1,4 @@
-// alpha-market API — single Hono server on one port.
+// alpha402 API — single Hono server on one port.
 //
 // Phase C — the Hedera payment gates:
 //   • per-call feeds (whale-radar, volume-radar, macro-news) are x402-gated (pay per query)
@@ -59,10 +59,10 @@ const reqUnits = (c: any): number => Math.min(Math.max(Math.floor(Number(c.req.h
 app.onError((err, c) => c.json({ error: String(err.message ?? err) }, 500));
 
 // ===== ungated routes (registered BEFORE the payment middleware) =====
-app.get("/", (c) => c.text("alpha-market api — GET /catalog, /health, /events, /activity; paid feeds under /feed/*"));
+app.get("/", (c) => c.text("alpha402 api — GET /catalog, /health, /events, /activity; paid feeds under /feed/*"));
 
 app.get("/health", (c) => c.json({
-  ok: true, service: "alpha-market", feeds: cfg.feeds.length,
+  ok: true, service: "alpha402", feeds: cfg.feeds.length,
   configured: cfg.missing.length === 0, missing: cfg.missing,
   hedera: hederaEnabled(), facilitator: cfg.facilitatorUrl,
 }));
@@ -282,7 +282,7 @@ app.post("/subscribe", async (c) => {
 
 // ===== start =====
 serve({ fetch: app.fetch, port: cfg.port }, (info) => {
-  console.log(`▶ alpha-market api on http://localhost:${info.port}`);
+  console.log(`▶ alpha402 api on http://localhost:${info.port}`);
   console.log(`  per-call: ${perCall.map((f) => f.name).join(", ")}  ·  subscription: ${subFeed.name}`);
   console.log(`  facilitator ${cfg.facilitatorUrl} · hedera ${hederaEnabled() ? "configured" : "NOT configured"}`);
   if (cfg.missing.length) console.warn(`⚠ missing config: ${cfg.missing.join(", ")} (paid/live routes refuse until set)`);

@@ -1,4 +1,4 @@
-// Config + env + feeds loader for the alpha-market API.
+// Config + env + feeds loader for the alpha402 API.
 // Loads .env (if present) and feeds.json, interpolates ${WALLET}, and reports which
 // required keys are missing so we fail LOUDLY rather than silently serving a fake path.
 

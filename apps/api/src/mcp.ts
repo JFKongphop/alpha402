@@ -1,4 +1,4 @@
-// alpha-market MCP server — makes any AI agent a paying customer.
+// alpha402 MCP server — makes any AI agent a paying customer.
 //
 // Tools:
 //   list_feeds  → discover what's for sale (agent discovery / directory)
@@ -8,7 +8,7 @@
 //
 // Payments are REAL: the same x402 Hedera client, blocky402 as fee-payer, so each
 // call returns a live HashScan transaction. Needs HEDERA_CLIENT_ID/HEDERA_CLIENT_KEY
-// (the buyer's signing account) in .env. Requires the alpha-market API to be running.
+// (the buyer's signing account) in .env. Requires the alpha402 API to be running.
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
@@ -25,11 +25,11 @@ const buyer = cfg.client.accountId && cfg.client.key
 const hashscan = (tx: string) =>
   `https://hashscan.io/testnet/transaction/${String(tx).replace("@", "-").replace(/\.(\d+)$/, "-$1")}`;
 
-const server = new McpServer({ name: "alpha-market", version: "0.1.0" });
+const server = new McpServer({ name: "alpha402", version: "0.1.0" });
 
 server.tool(
   "list_feeds",
-  "List the market-intelligence feeds for sale on alpha-market: name, price (HBAR), pay model (per-call or subscription), and how to buy. Call this first.",
+  "List the market-intelligence feeds for sale on alpha402: name, price (HBAR), pay model (per-call or subscription), and how to buy. Call this first.",
   {},
   async () => {
     const cat = await fetch(`${API}/catalog`).then((r) => r.json());
