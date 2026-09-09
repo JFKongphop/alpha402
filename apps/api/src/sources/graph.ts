@@ -64,21 +64,36 @@ export interface PoolMomentum {
   momentum: number;    // today / prev (capped)
 }
 
+// A pool needs real trading to be a momentum signal. High TVL alone isn't enough —
+// a whale-parked pool can do ~$0 a day, and today/prev on tiny numbers is noise
+// (e.g. $0.22 vs $0 → a meaningless 999×). So: drop pools below a daily-volume
+// floor, treat a negligible prior day as "new" only when today is real, and cap
+// the ratio so a near-zero denominator can't dominate the ranking.
+const MIN_VOL_USD = 10_000;   // below this on BOTH days = dead, ignore
+const PREV_FLOOR_USD = 1_000; // prior day below this = ratios are noise → "new"
+const MOMENTUM_CAP = 50;      // clamp; prev===0 with real today stays the 999 "new" sentinel
+
 /** Mode 2 — pools with unusual volume momentum (today vs prior day). */
 export async function volumeMomentum(cfg: GraphCfg, topN = 15): Promise<PoolMomentum[]> {
+  // over-fetch by TVL, then keep only pools with genuine volume
   const q = `query($n: Int!){
     pools(first:$n, orderBy: totalValueLockedUSD, orderDirection: desc, where:{ totalValueLockedUSD_gt: "1000000" }){
       token0{ symbol } token1{ symbol } totalValueLockedUSD
       poolDayData(first:2, orderBy: date, orderDirection: desc){ volumeUSD }
     }
   }`;
-  const d = await gql<{ pools: any[] }>(cfg, q, { n: topN });
+  const d = await gql<{ pools: any[] }>(cfg, q, { n: Math.max(topN, 40) });
   return d.pools.map((p) => {
     const today = Number(p.poolDayData?.[0]?.volumeUSD ?? 0);
     const prev = Number(p.poolDayData?.[1]?.volumeUSD ?? 0);
-    const momentum = prev > 0 ? today / prev : (today > 0 ? 999 : 0);
+    const momentum = prev >= PREV_FLOOR_USD
+      ? Math.min(today / prev, MOMENTUM_CAP)
+      : (today >= MIN_VOL_USD ? 999 : 0); // "new" only if today is genuinely active
     return { pair: `${p.token0?.symbol}/${p.token1?.symbol}`, tvlUSD: Number(p.totalValueLockedUSD), volumeToday: today, volumePrev: prev, momentum };
-  }).sort((a, b) => b.momentum - a.momentum);
+  })
+    .filter((p) => p.volumeToday >= MIN_VOL_USD || p.volumePrev >= MIN_VOL_USD) // no dead pools
+    .sort((a, b) => b.momentum - a.momentum)
+    .slice(0, topN);
 }
 
 /** Mode 3 — recent swaps by watched wallet addresses (the tracker). */

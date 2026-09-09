@@ -35,13 +35,24 @@ export async function runChat(messages: any[], deps: ChatDeps, context?: { feed?
     content:
       "You are Alpha, a market-intelligence agent for crypto traders. Answer from the free brief/radar when you can. " +
       "When the user wants fresh or specific data, PAY per query (pay_feed) or subscribe on their behalf — payments settle on Hedera and you should mention the HashScan transaction when one comes back. " +
-      "When the user asks WHAT or WHERE to invest, use recommend_pool to surface a live Uniswap pool + quote (the user then invests with one click). Be concise, cite tokens and figures.",
+      "When the user asks WHAT or WHERE to invest, use recommend_pool to surface a live Uniswap pool + quote (the user then invests with one click). Be concise, cite tokens and figures. " +
+      "Format numbers for humans: momentum as 'N×' (two decimals, e.g. 1.38×; say 'new' for a pool with no prior volume). USD volumes with a $ and thousands separators, at most abbreviated (e.g. $360k or $8.4M). Never use scientific notation (no 4.66e-7) or bare decimals for money.",
   };
   const convo: any[] = [system, ...messages];
   if (context?.feed && Array.isArray(context.data) && context.data.length) {
+    // pre-format the numbers so the model can't echo raw values (4.66e-7, 0.22)
+    let data: any[] = context.data;
+    if (context.feed === "volume-radar") {
+      data = context.data.map((p: any) => ({
+        pair: p.pair,
+        volumeTodayUSD: Math.round(Number(p.volumeToday) || 0),
+        volumePrevUSD: Math.round(Number(p.volumePrev) || 0),
+        momentum: Number(p.momentum) >= 999 ? "new" : `${(Number(p.momentum) || 0).toFixed(2)}×`,
+      }));
+    }
     convo.splice(1, 0, {
       role: "system",
-      content: `The user is viewing a "${context.feed}" result they just purchased. Prefer answering about THIS data directly, citing figures from it. Data (JSON): ${JSON.stringify(context.data).slice(0, 6000)}`,
+      content: `The user is viewing a "${context.feed}" result they just purchased. Prefer answering about THIS data directly, citing figures from it. Data (JSON): ${JSON.stringify(data).slice(0, 6000)}`,
     });
   }
 
