@@ -111,7 +111,7 @@ export default function AgentLive() {
       <div className="agent-log" ref={boxRef}>
         {rows.length === 0 && (
           <div className="muted" style={{ padding: 20 }}>
-            Press ▶ — the agent will start reading the market and paying for the data it needs, on its own.
+            Press ▶ the agent will start reading the market and paying for the data it needs, on its own.
           </div>
         )}
         {rows.map((e) => (

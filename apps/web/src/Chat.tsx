@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import VolumeBars from "./VolumeBars";
+import { feedLabel } from "./labels";
 
 function TokenIcon({ sym }: { sym: string }) {
   const s = sym.toUpperCase();
@@ -24,7 +26,17 @@ function TokenIcon({ sym }: { sym: string }) {
   return null;
 }
 
-interface Msg { role: "user" | "assistant"; content: string }
+interface Msg { role: "user" | "assistant"; content: string; chart?: { kind: "volume-bars"; data: any[] } }
+
+// the model replies in light markdown; render **bold** and `code` inline so they
+// don't show as literal asterisks. (newlines are handled by white-space: pre-wrap)
+function renderRich(text: string): ReactNode[] {
+  return text.split(/(\*\*[^*]+\*\*|`[^`]+`)/g).map((p, i) => {
+    if (/^\*\*[^*]+\*\*$/.test(p)) return <strong key={i}>{p.slice(2, -2)}</strong>;
+    if (/^`[^`]+`$/.test(p)) return <code key={i}>{p.slice(1, -1)}</code>;
+    return p;
+  });
+}
 interface PoolQuote {
   ok: boolean; chainId: number; tokenIn: string; tokenOut: string;
   amountIn: string; amountOut: string; minReceived: string; priceImpact: number; rate: string; route: string;
@@ -32,8 +44,8 @@ interface PoolQuote {
 const BASE = (import.meta as any).env?.VITE_API ?? "/api";
 
 function greetingFor(feed?: string | null): string {
-  if (feed === "whale-radar") return "You're viewing your whale-radar result — ask me which wallets moved, what's unusual, or which pool to invest in. I can pay for data on Hedera and recommend a Uniswap pool.";
-  if (feed === "volume-radar") return "You're viewing your volume-radar result — ask me which pools are heating up, or which one to invest in. I can recommend a Uniswap pool and you can invest in one click.";
+  if (feed === "whale-radar") return "You're viewing your whale-flow result — ask me which wallets moved, what's unusual, or which pool to invest in. I can pay for data on Hedera and recommend a Uniswap pool.";
+  if (feed === "volume-radar") return "You're viewing your volume-momentum result — ask me which pools are heating up, or which one to invest in. I can recommend a Uniswap pool and you can invest in one click.";
   if (feed === "macro-news") return "You're viewing your macro-news result — ask me to summarise the themes, what's most market-moving, or where to invest.";
   return "Hi — I'm Alpha, your market-intelligence agent. Ask me about the market, or which pool to invest in — I'll recommend a Uniswap pool and settle on Hedera.";
 }
@@ -123,6 +135,23 @@ export default function Chat({ context }: { context?: { feed: string; data: any[
     const text = (q ?? input).trim();
     if (!text || busy) return;
     const next: Msg[] = [...msgs, { role: "user", content: text }];
+
+    // volume-radar "summarise" → answer with a grouped bar chart (today vs previous
+    // 24h volume per pool), not a wall of markdown. Read straight off the viewed data.
+    const rows = (context?.data ?? []).filter((p) => p && p.pair && Number(p.volumeToday) > 0);
+    // only the explicit "summarise" ask draws the chart; "which pool is heating up
+    // most?" is a single-answer question → let the LLM answer it in text.
+    if (feed === "volume-radar" && rows.length > 0 && /summar(i|y)|volume picture/i.test(text)) {
+      const top = [...rows].sort((a, b) => Number(b.volumeToday) - Number(a.volumeToday));
+      const heating = rows.filter((p) => Number(p.volumeToday) >= Number(p.volumePrev ?? 0)).length;
+      const lead = top[0];
+      const summary = `Volume picture across ${rows.length} pools — ${heating} heating up, ${rows.length - heating} cooling. ${lead.pair} leads today's flow. Green is the last 24h, blue the prior 24h; the ▲/▼ under each pool is its momentum.`;
+      setMsgs([...next, { role: "assistant", content: summary, chart: { kind: "volume-bars", data: top } }]);
+      setInput("");
+      setTimeout(() => boxRef.current?.scrollTo(0, boxRef.current.scrollHeight), 60);
+      return;
+    }
+
     setMsgs(next); setInput(""); setBusy(true); setTools([]);
     try {
       const r = await fetch(`${BASE}/chat`, {
@@ -145,9 +174,14 @@ export default function Chat({ context }: { context?: { feed: string; data: any[
 
   return (
     <div className="card chat">
-      <div className="head"><h2>💬 {feed ? `Ask about this ${feed}` : "Chat with the market"}</h2><span className="badge soft">agentic · Hedera + Uniswap</span></div>
+      <div className="head"><h2>💬 {feed ? `Ask about this ${feedLabel(feed)}` : "Chat with the market"}</h2><span className="badge soft">agentic · Hedera + Uniswap</span></div>
       <div className="chatbox" ref={boxRef}>
-        {msgs.map((m, i) => <div key={i} className={`msg ${m.role}`}>{m.content}</div>)}
+        {msgs.map((m, i) => (
+          <div key={i} className={`msg ${m.role}${m.chart ? " has-chart" : ""}`}>
+            {renderRich(m.content)}
+            {m.chart?.kind === "volume-bars" && <VolumeBars data={m.chart.data} />}
+          </div>
+        ))}
         {busy && <div className="msg assistant muted">thinking…</div>}
       </div>
       {pool && <InvestCard pool={pool} />}

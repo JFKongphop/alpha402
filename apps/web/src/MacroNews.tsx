@@ -1,5 +1,6 @@
 // macro-news → a clean news feed (list), not a canvas. News is text, so it reads
-// as a scannable list of headline · time · link — no graph chrome.
+// as a scannable list of headline · time · link — no graph chrome. Ask the chat below
+// to summarise the top themes.
 
 function fmtTime(published?: string): string {
   if (!published) return "";

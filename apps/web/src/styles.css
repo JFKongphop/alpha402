@@ -102,11 +102,13 @@ a { color: inherit; }
 .badge.sub { background: var(--lavender); color: var(--violet); }
 .badge.call { background: var(--mint); color: #155e3f; }
 .badge.soft { background: var(--whisper); color: var(--ash); }
+.badge.uni { background: var(--pink); color: #ff007a; }
 
 /* rows / lists */
 .row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--hairline); font-size: 14px; }
 .row:last-child { border-bottom: 0; }
 .row .l { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.receipts .row { padding: 8px 0; }
 .pair { font-weight: 600; letter-spacing: -0.01em; }
 .usd { font-variant-numeric: tabular-nums; font-weight: 700; }
 .addr { font-family: var(--mono); font-size: 12px; color: var(--ash); text-decoration: none; }
@@ -142,12 +144,13 @@ a { color: inherit; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
 /* feed cards */
-.feed { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 14px; border: 1px solid var(--hairline); border-radius: 10px; margin-bottom: 10px; }
+.feed { position: relative; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 14px; min-height: 92px; box-sizing: border-box; border: 1px solid var(--hairline); border-radius: 10px; margin-bottom: 10px; }
+.feed .feed-tag { position: absolute; right: 14px; bottom: 14px; white-space: nowrap; }
 .feed:last-child { margin-bottom: 0; }
 .feed .name { font-weight: 600; letter-spacing: -0.01em; display: flex; align-items: center; gap: 8px; }
 .feed .d { font-size: 12.5px; color: var(--ash); margin-top: 4px; max-width: 44ch; }
 .feed .price { background: none; padding: 0; display: block; text-align: right; }
-.feed .price .p { font-size: 15px; }
+.feed .price .p { font-size: 15px; white-space: nowrap; }
 .feed .price .u { font-size: 11px; color: var(--ash); }
 
 /* receipts */
@@ -168,8 +171,6 @@ a { color: inherit; }
 .feed.clickable { cursor: pointer; transition: border-color 0.12s ease, transform 0.08s ease, box-shadow 0.12s ease; }
 .feed.clickable:hover { border-color: var(--hairline-strong); transform: translateY(-1px); box-shadow: var(--shadow-btn); }
 .feed .price { display: flex; flex-direction: column; align-items: flex-end; }
-.cta-hint { font-size: 11px; font-weight: 700; color: var(--ink); margin-top: 6px; opacity: 0; transition: opacity 0.12s ease; white-space: nowrap; }
-.feed.clickable:hover .cta-hint { opacity: 1; }
 
 .overlay { position: fixed; inset: 0; background: rgba(17, 17, 17, 0.42); backdrop-filter: blur(3px); display: grid; place-items: center; z-index: 100; padding: 20px; }
 .modal { background: var(--white); border-radius: var(--radius-card); box-shadow: var(--shadow-header); padding: 24px; width: 100%; max-width: 460px; max-height: 86vh; overflow-y: auto; }
@@ -227,6 +228,14 @@ a.newsrow:hover .news-arrow { color: var(--ink); }
 .msg { max-width: 78%; padding: 12px 15px; border-radius: 14px; font-size: 14.5px; line-height: 1.5; letter-spacing: -0.005em; white-space: pre-wrap; }
 .msg.user { align-self: flex-end; background: var(--ink); color: var(--white); border-bottom-right-radius: 5px; }
 .msg.assistant { align-self: flex-start; background: var(--whisper); color: var(--ink); border-bottom-left-radius: 5px; }
+.msg.has-chart { max-width: 96%; width: 100%; }
+.msg code { font-family: var(--mono); font-size: 0.9em; background: rgba(17,17,17,0.06); padding: 1px 5px; border-radius: 5px; }
+.msg.user code { background: rgba(255,255,255,0.18); }
+.volbars { margin-top: 12px; background: var(--white); border: 1px solid var(--hairline); border-radius: 12px; padding: 14px 12px 10px; }
+.volbars-legend { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; padding: 8px 6px 2px; font-size: 12px; color: var(--ash); font-family: var(--font); }
+.volbars-legend span { display: inline-flex; align-items: center; gap: 7px; }
+.volbars-legend .sw { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+.volbars-legend .muted { color: var(--ash); opacity: 0.85; }
 .tools { font-family: var(--mono); font-size: 11px; color: var(--ash); background: var(--whisper); border-radius: 8px; padding: 8px 10px; }
 .chatin { display: flex; gap: 10px; }
 .chatin input { flex: 1; padding: 12px 16px; border-radius: var(--radius-btn); border: 1px solid var(--hairline-strong); background: var(--white); font-family: var(--font); font-size: 14px; outline: none; color: var(--ink); }

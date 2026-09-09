@@ -10,6 +10,7 @@ import Chat from "./Chat";
 import AgentLive from "./AgentLive";
 import Landing from "./Landing";
 import AmbientGlow from "./AmbientGlow";
+import { feedLabel } from "./labels";
 
 // ---------- types ----------
 interface CatalogFeed { name: string; model: string; price: number; meter: string | null; periodDays: number | null; description: string; endpoint: string }
@@ -89,7 +90,7 @@ export default function App() {
           <section className="hero">
             <h1>Market intelligence, priced for machines.</h1>
             <p>
-              Whale flows and volume momentum from Uniswap (via The Graph), fused with macro news by AI —
+              Whale flows and volume momentum from Uniswap (via The Graph), fused with macro news by AI
               sold to agents pay-per-query and by subscription, settled on Hedera with verifiable receipts.
             </p>
             <div className="flow">
@@ -121,7 +122,7 @@ export default function App() {
       {view === "flow" && (
         <>
           <section className="hero" style={{ paddingBottom: 10 }}>
-            <h1 style={{ fontSize: 38 }}>{dataView ? `${dataView.feed} · your data` : "The data flow."}</h1>
+            <h1 style={{ fontSize: 38 }}>{dataView ? `${feedLabel(dataView.feed)} · your data` : "The data flow."}</h1>
             <p>{dataView
               ? (dataView.feed === "volume-radar"
                 ? "Every pool by momentum (x) × 24h volume (y, log) — top-right is unusual (heating up on high volume). Dot size = TVL."
@@ -148,7 +149,7 @@ export default function App() {
         <>
           <section className="hero" style={{ paddingBottom: 10 }}>
             <h1 style={{ fontSize: 38 }}>The agent trades itself.</h1>
-            <p>No human in the loop — it reads whale flow, volume momentum, and macro, decides what it needs,
+            <p>No human in the loop, it reads whale flow, volume momentum, and macro, decides what it needs,
               and pays for that feed itself via x402 on Hedera. Every “paid” line is a real settled transaction.</p>
           </section>
           <AgentLive />
@@ -159,7 +160,7 @@ export default function App() {
         <>
           <section className="hero" style={{ paddingBottom: 10 }}>
             <h1 style={{ fontSize: 38 }}>Transactions.</h1>
-            <p>Every payment and subscription, settled on Hedera — click any to verify on HashScan.</p>
+            <p>Every payment and subscription, settled on Hedera click any to verify on HashScan.</p>
           </section>
           <TxList />
         </>
@@ -266,7 +267,7 @@ function BriefCard({ brief, sub, askedQ, loading }: { brief: Brief | null; sub?:
 function WhaleRadar({ whales }: { whales: Swap[] }) {
   return (
     <div className="card">
-      <div className="head"><h2>🐋 Whale radar</h2><span className="badge call">Uniswap v3 · The Graph</span></div>
+      <div className="head"><h2>🐋 Whale flow</h2><span className="badge call">Uniswap v3 · The Graph</span></div>
       <div className="desc">Large swaps over threshold — real on-chain money flow.</div>
       {whales.length === 0 && <div className="muted">Loading live swaps…</div>}
       {whales.slice(0, 8).map((s, i) => (
@@ -299,10 +300,10 @@ function VolumeMomentum({ pools }: { pools: Pool[] }) {
 }
 
 function Prices({ prices }: { prices: Record<string, number> }) {
-  const entries = Object.entries(prices);
+  const entries = Object.entries(prices).filter(([sym]) => sym !== "USDT");
   return (
     <div className="card">
-      <div className="head"><h2>💲 Live prices</h2><span className="badge soft">Uniswap API</span></div>
+      <div className="head"><h2>💲 Live prices</h2><span className="badge uni">Uniswap API</span></div>
       <div className="desc">Quotes routed across v2/v3/v4.</div>
       {entries.length === 0 && <div className="muted">Loading prices…</div>}
       <div className="prices">
@@ -323,14 +324,13 @@ function Feeds({ catalog, onPick }: { catalog: Catalog | null; onPick: (f: Catal
       {perCall.map((f) => (
         <div className="feed clickable" key={f.name} onClick={() => onPick(f)} title="Click to pay">
           <div>
-            <div className="name">{f.name}<span className="badge call">per-call</span></div>
+            <div className="name">{feedLabel(f.name)}</div>
             <div className="d">{f.description}</div>
           </div>
           <div className="price">
             <span className="p">{f.price} ℏ</span>
-            <span className="u">/ {f.meter ?? "call"}</span>
-            <span className="cta-hint">tap to pay →</span>
           </div>
+          <span className="badge call feed-tag">per-call</span>
         </div>
       ))}
       {!catalog && <div className="muted">Loading catalog…</div>}
@@ -355,7 +355,7 @@ function BuyModal({ feed, onClose, onViewData, onSuccess }: { feed: CatalogFeed;
     <div className="overlay" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-head">
-          <h2>{feed.name}{isSub ? <span className="badge sub">subscription</span> : <span className="badge call">per-call</span>}</h2>
+          <h2>{feedLabel(feed.name)}{isSub ? <span className="badge sub">subscription</span> : <span className="badge call">per-call</span>}</h2>
           <button className="x" onClick={onClose} aria-label="close">×</button>
         </div>
         <p className="muted" style={{ marginTop: 6 }}>{feed.description}</p>
@@ -423,11 +423,11 @@ function Tracker({ swaps, watching }: { swaps: Swap[]; watching?: number }) {
 
 function Receipts({ receipts }: { receipts: Tx[] }) {
   return (
-    <div className="card">
+    <div className="card receipts">
       <div className="head"><h2>🧾 On-chain receipts</h2><span className="badge soft">HCS · HashScan</span></div>
       <div className="desc">Read back from the Hedera mirror node — every payment / receipt, verifiable on HashScan.</div>
       {receipts.length === 0 && <div className="muted">Reading on-chain history…</div>}
-      {receipts.slice(0, 8).map((e) => (
+      {receipts.slice(0, 5).map((e) => (
         <div className="row" key={e.id}>
           <div className="l">
             <span className="badge soft">{e.kind}</span>
