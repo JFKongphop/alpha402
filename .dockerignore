@@ -1,0 +1,22 @@
+# never bake local state, secrets, or build artifacts into the image
+.env
+.env.*
+**/.env
+**/node_modules
+**/dist
+**/.turbo
+
+# vcs + local tooling
+.git
+.gitignore
+.DS_Store
+**/*.log
+
+# reference-only prototype (not part of the deployed app)
+prototype
+
+# docs / design / decks — not needed at runtime
+deck
+design
+sponsor-prize
+*.md

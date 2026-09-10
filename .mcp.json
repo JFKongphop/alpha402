@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "alpha-market": {
+      "command": "npx",
+      "args": ["tsx", "apps/api/src/mcp.ts"]
+    }
+  }
+}
