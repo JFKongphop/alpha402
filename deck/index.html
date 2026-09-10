@@ -70,6 +70,7 @@ html, body {
 .display.big { font-size: 112px; line-height: 0.98; }
 .lead { font-size: 30px; font-weight: 400; line-height: 1.4; color: var(--ink-2); max-width: 34ch; }
 .o { color: var(--orange); } .p { color: var(--purple); } .g { color: var(--blue); } .dim { color: var(--ink-3); } .ink { color: var(--ink); }
+.lead .o, .lead .p, .lead .g { font-weight: 700; } /* bold the sponsor names in subtitles */
 .grad { background: linear-gradient(96deg, var(--orange), var(--purple)); -webkit-background-clip: text; background-clip: text; color: transparent; }
 
 /* brand mark */
@@ -81,6 +82,9 @@ html, body {
 .foot { position: absolute; left: 118px; right: 118px; bottom: 66px; font-size: 19px; color: var(--ink-3); letter-spacing: 0.01em; }
 .foot b { color: var(--ink); font-weight: 600; }
 .foot .sep { color: var(--border); margin: 0 14px; }
+/* brand icons in the foot strip */
+.bico { width: 28px; height: 28px; vertical-align: middle; margin-right: 11px; }
+.foot .uni { font-size: 26px; vertical-align: middle; margin-right: 9px; }
 
 /* the loop, as an inline flow of chips (not node cards) */
 .flow { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
@@ -88,6 +92,7 @@ html, body {
 .fpill.pay { background: rgba(176,79,199,0.10); border-color: rgba(176,79,199,0.28); color: var(--purple); }
 .fpill.act { background: rgba(238,123,61,0.10); border-color: rgba(238,123,61,0.30); color: var(--orange); }
 .farr { color: var(--ink-3); font-size: 26px; }
+.pico { width: 26px; height: 26px; flex: 0 0 auto; }
 
 /* builds */
 [data-frag] { opacity: 0; transform: translateY(8px); transition: opacity 320ms var(--ease), transform 320ms var(--ease); }
@@ -97,8 +102,14 @@ html, body {
 .proof { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 8px; }
 .pill { display: inline-flex; align-items: center; gap: 10px; padding: 11px 18px; border-radius: 999px; background: var(--surface); border: 1px solid var(--border); box-shadow: var(--shadow-sm); font-size: 18px; color: var(--ink-2); }
 .pill .dot { width: 8px; height: 8px; border-radius: 50%; }
-.pill .dot.npm { background: #CB3837; } .pill .dot.o { background: var(--orange); } .pill .dot.p { background: var(--purple); } .pill .dot.g { background: var(--blue); }
+.pill .dot.npm { background: #CB3837; } .pill .dot.o { background: #FF007A; } .pill .dot.p { background: #000; } .pill .dot.g { background: var(--blue); }
 .pill b { color: var(--ink); font-weight: 600; }
+
+/* published-package proof: a real install command, terminal-styled */
+.install { display: inline-flex; align-self: flex-start; align-items: center; gap: 12px; margin: 26px 0 4px; padding: 14px 22px; border-radius: 12px; background: #141210; box-shadow: var(--shadow-sm); font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 23px; color: #edeae6; }
+.install .np { color: var(--orange); }
+.install b { color: #fff; font-weight: 600; }
+.install .tag { font-family: inherit; font-size: 13px; letter-spacing: 0.02em; color: rgba(255,255,255,0.5); border-left: 1px solid rgba(255,255,255,0.18); padding-left: 12px; }
 
 /* chrome */
 #counter { position: absolute; right: 40px; bottom: 30px; font-size: 15px; color: var(--ink-3); font-variant-numeric: tabular-nums; letter-spacing: 0.06em; z-index: 20; }
@@ -119,7 +130,7 @@ html, body {
       <div class="brand"><div class="a-mark">α</div><span class="wm">alpha402</span></div>
       <div class="display" style="font-size:104px; max-width:16ch;">Market intelligence,<br><span class="grad">priced for machines.</span></div>
       <div class="lead">On-chain signals queried via <span class="g">The Graph</span>, priced on <span class="p">Hedera</span>, acted on via <span class="o">Uniswap</span>.</div>
-      <div class="foot">npm <b>alpha402</b><span class="sep">·</span>Hedera <b>testnet</b><span class="sep">·</span>query <b>The Graph</b><span class="sep">·</span>Uniswap <b>Unichain Sepolia</b></div>
+      <div class="foot"><svg class="bico" viewBox="0 0 32 32" aria-label="npm"><rect width="32" height="32" rx="5" fill="#CB3837"/><text x="16" y="21" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="800" fill="#fff">npm</text></svg><b>alpha402</b><span class="sep">·</span><svg class="bico" viewBox="0 0 32 32" aria-label="Hedera"><circle cx="16" cy="16" r="16" fill="#222"/><path fill="#fff" d="M11 8h2v5h6V8h2v16h-2v-6h-6v6h-2z"/></svg><b>testnet</b><span class="sep">·</span><svg class="bico" viewBox="0 0 32 32" aria-label="The Graph"><circle cx="14" cy="18" r="8.5" fill="none" stroke="#4C66FF" stroke-width="2.6"/><line x1="19.5" y1="12.5" x2="23" y2="9" stroke="#4C66FF" stroke-width="2.6" stroke-linecap="round"/><circle cx="25" cy="7" r="3.6" fill="#4C66FF"/></svg><b>The Graph</b><span class="sep">·</span><span class="uni">🦄</span><b>Unichain Sepolia</b></div>
     </section>
 
     <!-- 2. PROBLEM -->
@@ -136,9 +147,9 @@ html, body {
       <div class="lead" data-frag="1" style="max-width:64ch">The agent queries signals via <span class="g">The Graph</span>, reads them with AI,<br>pays on <span class="p">Hedera x402</span>, then swaps on <span class="o">Uniswap</span>.<br>No human in the loop.</div>
       <div class="flow" data-frag="2">
         <span class="fpill">🦄 Uniswap</span><span class="farr">→</span>
-        <span class="fpill">◈ The Graph</span><span class="farr">→</span>
+        <span class="fpill"><svg class="pico" viewBox="0 0 32 32" aria-label="The Graph"><circle cx="14" cy="18" r="8.5" fill="none" stroke="#4C66FF" stroke-width="2.6"/><line x1="19.5" y1="12.5" x2="23" y2="9" stroke="#4C66FF" stroke-width="2.6" stroke-linecap="round"/><circle cx="25" cy="7" r="3.6" fill="#4C66FF"/></svg> The Graph</span><span class="farr">→</span>
         <span class="fpill">◆ AI brief</span><span class="farr">→</span>
-        <span class="fpill pay">ℏ Hedera</span><span class="farr">→</span>
+        <span class="fpill pay"><svg class="pico" viewBox="0 0 32 32" aria-label="Hedera"><circle cx="16" cy="16" r="16" fill="#222"/><path fill="#fff" d="M11 8h2v5h6V8h2v16h-2v-6h-6v6h-2z"/></svg> Hedera</span><span class="farr">→</span>
         <span class="fpill act">🦄 Invest</span>
       </div>
       <div class="foot" data-frag="3">settles with <b>x402</b><span class="sep">·</span><b>HTS pass</b><span class="sep">·</span><b>HCS receipt</b><span class="sep">·</span>verifiable on HashScan</div>
@@ -152,11 +163,11 @@ html, body {
     </section>
 
     <!-- 5. CLOSE -->
-    <section class="slide s-title" data-notes='{"vo":"That is alpha402 — the market that sells alpha to machines, and lets them act on it. On-chain, end to end.","t":"0:53–1:00"}'>
+    <section class="slide s-title" data-notes='{"vo":"That is alpha402 — the market that sells alpha to machines, and lets them act on it. On-chain, end to end. And the x402 engine ships on npm as alpha402, reusable by any agent.","t":"0:53–1:00"}'>
       <div class="brand"><div class="a-mark">α</div><span class="wm">alpha402</span></div>
       <div class="display" style="max-width:24ch;">The market that sells <span class="o">alpha</span> to machines <br>and lets them <span class="p">act</span> on it.</div>
+      <div class="install"><span class="np">$</span> npm i <b>alpha402</b><span class="tag">published · reusable x402 + Hedera engine</span></div>
       <div class="proof">
-        <span class="pill"><span class="dot npm"></span>npm <b>alpha402</b></span>
         <span class="pill"><span class="dot p"></span>Hedera <b>x402 · HTS · HCS</b></span>
         <span class="pill"><span class="dot g"></span>query <b>The Graph</b></span>
         <span class="pill"><span class="dot o"></span>Uniswap <b>Unichain Sepolia</b></span>
