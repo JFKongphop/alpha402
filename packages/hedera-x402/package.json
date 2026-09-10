@@ -1,0 +1,65 @@
+{
+  "name": "alpha402",
+  "version": "0.1.0",
+  "description": "Reusable x402 payment engine for Hedera — pay-per-call x402 gating, HTS subscription passes, and verifiable HCS receipts, settled via the Blocky402 facilitator.",
+  "keywords": [
+    "x402",
+    "hedera",
+    "hts",
+    "hcs",
+    "agentic-payments",
+    "micropayments",
+    "ai-agents",
+    "blocky402"
+  ],
+  "license": "MIT",
+  "author": "JFKongphop",
+  "homepage": "https://github.com/JFKongphop/alpha402#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JFKongphop/alpha402.git",
+    "directory": "packages/hedera-x402"
+  },
+  "bugs": {
+    "url": "https://github.com/JFKongphop/alpha402/issues"
+  },
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "clean": "rm -rf dist",
+    "prepublishOnly": "npm run clean && npm run build",
+    "typecheck": "tsc --noEmit"
+  },
+  "publishConfig": {
+    "access": "public",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.js"
+      }
+    }
+  },
+  "dependencies": {
+    "@hashgraph/sdk": "^2.81.0",
+    "@x402/core": "^2.19.0",
+    "@x402/fetch": "^2.19.0",
+    "@x402/hedera": "^2.19.0",
+    "@x402/hono": "^2.19.0",
+    "hono": "^4.6.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.6.0"
+  }
+}
