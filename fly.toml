@@ -1,40 +1,32 @@
-# Fly.io config — one image runs the alpha402 API and serves the dashboard on 4021.
+# fly.toml app configuration file generated for alpha402 on 2026-09-10T16:16:24Z
 #
-# ⚠️ EDIT `app` below to the Fly app where you already set the secrets, then deploy:
-#     fly deploy
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
-# The image bundles the built web (apps/web/dist); the server serves it on the same
-# port with an SPA fallback, so the app URL loads the full dashboard.
 
-app = "alpha402"                 # <-- change to your Fly app name
-primary_region = "ams"           # Amsterdam, matching the machine you created
+app = 'alpha402'
+primary_region = 'sin'
 
 [build]
-  dockerfile = "Dockerfile"
+  dockerfile = 'Dockerfile'
 
-# PORT + WEB_DIST are also set in the Dockerfile; repeated here so they're explicit.
 [env]
-  PORT = "4021"
-  WEB_DIST = "/app/apps/web/dist"
+  PORT = '4021'
+  WEB_DIST = '/app/apps/web/dist'
 
 [http_service]
-  internal_port = 4021           # must match the port the container listens on
+  internal_port = 4021
   force_https = true
-  # This app runs an always-on scheduler + autonomous agent loop + in-memory event
-  # log, so it must NOT be suspended when idle — keep one machine warm.
-  auto_stop_machines = false
+  auto_stop_machines = 'off'
   auto_start_machines = false
   min_machines_running = 1
 
   [[http_service.checks]]
-    method = "GET"
-    path = "/health"
-    interval = "30s"
-    timeout = "5s"
-    grace_period = "15s"
+    interval = '30s'
+    timeout = '5s'
+    grace_period = '15s'
+    method = 'GET'
+    path = '/health'
 
 [[vm]]
-  # 512MB recommended: the runtime uses tsx (esbuild) + the Hedera / ethers SDKs,
-  # which can exceed 256MB and OOM. Drop to 256mb only if you confirm it's stable.
-  size = "shared-cpu-1x"
-  memory = "512mb"
+  size = 'shared-cpu-1x'
+  memory = '512mb'
