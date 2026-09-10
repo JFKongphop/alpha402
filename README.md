@@ -15,16 +15,36 @@ The reusable payment engine is published to npm as [`alpha402`](https://www.npmj
 
 ---
 
+## The problem
+
+AI trading agents are **blind and handcuffed**. They can't pay for live market data on
+their own — API keys, cards, and subscriptions all assume a human — and they can't place
+the trade either. So an agent that should run autonomously still needs a person to buy its
+data and click *swap*. The rails for machine-to-machine commerce don't exist yet.
+
+## The solution
+
+alpha402 is a **market built for machines**. An agent queries on-chain signals through The
+Graph, reads them with AI, **pays per query with x402 on Hedera** (or holds an on-chain HTS
+pass for the AI brief), then **executes the swap on Uniswap** — no human in the loop. Data
+settles on Hedera with an HCS receipt; the trade runs on Uniswap. Every payment is a real,
+verifiable on-chain transaction, and the payment engine ships as a reusable npm package so
+any agent can plug in.
+
+---
+
 ## What it does
 
 alpha402 sells **synthesized market alpha** to AI agents and traders — not a raw API:
 
 | Feed | Source | Model | Price |
 |---|---|---|---|
-| `whale-radar` | large Uniswap swaps (whale activity) via The Graph | pay-per-call (x402) | 0.02 ℏ |
-| `volume-radar` | pools with unusual volume/liquidity momentum (same subgraph) | pay-per-call (x402) | 0.02 ℏ |
+| `whale-flow` | large Uniswap swaps (whale activity) via The Graph | pay-per-call (x402) | 0.02 ℏ |
+| `volume-momentum` | pools with unusual volume/liquidity momentum (same subgraph) | pay-per-call (x402) | 0.02 ℏ |
 | `macro-news` | market-moving macro / political news (RSS) | pay-per-call (x402) | 0.01 ℏ |
 | `alpha-brief` | **AI fuses whale + volume + prices + news → a market read** | subscription (HTS pass) | 1 ℏ / 30d |
+
+> API paths use the feed id: `whale-flow` → `/feed/whale-radar`, `volume-momentum` → `/feed/volume-radar`.
 
 Raw signals are metered **per query** and settle with x402 on Hedera. The AI brief is
 generated on a schedule (the AI does **not** run per request), cached, and gated by an
