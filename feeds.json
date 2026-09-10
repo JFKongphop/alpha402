@@ -1,0 +1,37 @@
+{
+  "wallet": "${WALLET}",
+  "feeds": [
+    {
+      "name": "whale-radar",
+      "model": "per-call",
+      "price": 0.02,
+      "meter": "per-query",
+      "description": "Large on-chain swaps (whale activity) from a live The Graph subgraph.",
+      "source": { "kind": "graph", "subgraph": "uniswap-v3", "signal": "whale-swaps", "minUsd": 500000, "limit": 20 }
+    },
+    {
+      "name": "volume-radar",
+      "model": "per-call",
+      "price": 0.02,
+      "meter": "per-query",
+      "description": "Pools with unusual volume / liquidity momentum (market structure) from the same subgraph.",
+      "source": { "kind": "graph", "subgraph": "uniswap-v3", "signal": "volume-momentum", "topN": 15 }
+    },
+    {
+      "name": "macro-news",
+      "model": "per-call",
+      "price": 0.01,
+      "meter": "per-query",
+      "description": "Market-moving macro / political news digest.",
+      "source": { "kind": "news", "feeds": ["https://cointelegraph.com/rss", "https://search.cnbc.com/rs/search/combinedcms/view.xml?partnerId=wrss01&id=10000664"], "limit": 15 }
+    },
+    {
+      "name": "alpha-brief",
+      "model": "subscription",
+      "price": 1.0,
+      "periodDays": 30,
+      "description": "AI-synthesized market-trend brief: whale flows + volume momentum + macro news -> what is happening and why.",
+      "source": { "kind": "brief", "inputs": ["whale-radar", "volume-radar", "macro-news"], "refreshMinutes": 15 }
+    }
+  ]
+}
