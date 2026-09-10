@@ -8,6 +8,8 @@
 
 import { Hono } from "hono";
 import { serve } from "@hono/node-server";
+import { serveStatic } from "@hono/node-server/serve-static";
+import { relative } from "node:path";
 import {
   makeResourceServer, hederaRoute, paymentMiddleware, decodeSettlement, toAtomic,
   hederaReceipt, hederaEnabled, fulfil, checkEntitlement, scheduleRenewal, makePaidFetch,
@@ -59,7 +61,8 @@ const reqUnits = (c: any): number => Math.min(Math.max(Math.floor(Number(c.req.h
 app.onError((err, c) => c.json({ error: String(err.message ?? err) }, 500));
 
 // ===== ungated routes (registered BEFORE the payment middleware) =====
-app.get("/", (c) => c.text("alpha402 api — GET /catalog, /health, /events, /activity; paid feeds under /feed/*"));
+// in prod the dashboard (WEB_DIST) owns "/"; without it, "/" is the API banner.
+if (!process.env.WEB_DIST) app.get("/", (c) => c.text("alpha402 api — GET /catalog, /health, /events, /activity; paid feeds under /feed/*"));
 
 app.get("/health", (c) => c.json({
   ok: true, service: "alpha402", feeds: cfg.feeds.length,
@@ -280,8 +283,20 @@ app.post("/subscribe", async (c) => {
   return c.json({ ...sub, renewal });
 });
 
+// serve the built dashboard on the same port (single-image prod deploy: API + web).
+// WEB_DIST is set in the Docker image (/app/apps/web/dist). serveStatic's root is
+// relative to cwd, so convert the absolute path. Registered AFTER all API routes,
+// so /catalog, /feed/*, /chain, … still win; unknown paths fall back to index.html.
+const webDist = process.env.WEB_DIST;
+if (webDist) {
+  const root = relative(process.cwd(), webDist) || ".";
+  app.use("/*", serveStatic({ root }));
+  app.get("*", serveStatic({ root, path: "index.html" })); // SPA fallback
+}
+
 // ===== start =====
 serve({ fetch: app.fetch, port: cfg.port }, (info) => {
+  if (webDist) console.log(`  dashboard served from ${webDist}`);
   console.log(`▶ alpha402 api on http://localhost:${info.port}`);
   console.log(`  per-call: ${perCall.map((f) => f.name).join(", ")}  ·  subscription: ${subFeed.name}`);
   console.log(`  facilitator ${cfg.facilitatorUrl} · hedera ${hederaEnabled() ? "configured" : "NOT configured"}`);
