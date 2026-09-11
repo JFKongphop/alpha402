@@ -6,3 +6,4 @@ dist
 frontend-style
 prototype
 *.png
+!covers/*.png
