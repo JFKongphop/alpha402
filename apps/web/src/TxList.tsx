@@ -22,7 +22,7 @@ export default function TxList() {
   const rows = Array.isArray(data) ? data : [];
 
   return (
-    <div className="card newsfeed" style={{ maxHeight: 464 }}>
+    <div className="card newsfeed" style={{ maxHeight: 532 }}>
       {rows.length === 0 && (
         <div className="muted" style={{ padding: 22 }}>
           Reading on-chain history from the Hedera mirror node…
