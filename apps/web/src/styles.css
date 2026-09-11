@@ -247,6 +247,17 @@ a.newsrow:hover .news-arrow { color: var(--ink); }
 /* ---- Uniswap investment pool card (under the chat) ---- */
 .pool { border: 1px solid var(--hairline); border-radius: 12px; padding: 14px 16px; margin: 4px 0 12px; background: var(--whisper); }
 .pool-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+.pool.collapsed .pool-head { margin-bottom: 8px; }
+.pool-toggle { flex: 0 0 auto; border: 1px solid var(--hairline-strong); background: var(--white); color: var(--ash); font-family: var(--mono); font-size: 12px; padding: 4px 10px; border-radius: 999px; cursor: pointer; white-space: nowrap; }
+.pool-toggle:hover { color: var(--ink); border-color: var(--ink); }
+/* expand/collapse the details with a smooth 1s drop-in.
+   grid-template-rows 1fr->0fr eases to the exact content height (no max-height jank). */
+.pool-head-r { display: inline-flex; align-items: center; gap: 8px; flex: 0 0 auto; }
+.pool-body { display: grid; grid-template-rows: 1fr; opacity: 1; transition: grid-template-rows 1s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.7s ease; }
+.pool.collapsed .pool-body { grid-template-rows: 0fr; opacity: 0; }
+.pool-body-inner { overflow: hidden; min-height: 0; transform: translateY(0); transition: transform 1s cubic-bezier(0.4, 0, 0.2, 1); }
+.pool.collapsed .pool-body-inner { transform: translateY(-6px); }
+@media (prefers-reduced-motion: reduce) { .pool-body, .pool-body-inner { transition: none; } }
 .pool-wallet { display: flex; align-items: center; gap: 8px; font-family: var(--mono); font-size: 12px; color: var(--ash); margin-bottom: 10px; }
 .pool-wallet .dot { width: 7px; height: 7px; border-radius: 999px; background: var(--red); flex: none; }
 .pool-wallet .dot.on { background: var(--green); box-shadow: 0 0 0 3px rgba(71, 208, 150, 0.18); }
@@ -262,6 +273,19 @@ a.newsrow:hover .news-arrow { color: var(--ink); }
 .pool-err { color: var(--red); font-size: 13px; margin-top: 8px; }
 .pool-done { display: flex; align-items: center; gap: 10px; color: var(--green); font-weight: 700; font-size: 14px; margin-top: 4px; }
 .pool-done .scan { margin-left: auto; }
+/* post-swap on-chain transfer flow (mirrors the explorer's net transfers) */
+.pool-tx { margin-top: 6px; border: 1px solid var(--hairline); border-radius: 10px; background: var(--white); padding: 12px; }
+.pool-tx-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.ok-badge { background: rgba(71,208,150,0.14); color: #1f7a55; font-weight: 700; font-size: 12px; padding: 3px 9px; border-radius: 999px; }
+.pool-tx-net { font-size: 12.5px; color: var(--ash); }
+.pool-tx .scan { margin-left: auto; }
+.pool-flow { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.flow-leg { display: inline-flex; align-items: center; gap: 6px; font-family: var(--mono); font-weight: 600; font-size: 14px; background: var(--whisper); border-radius: 8px; padding: 7px 11px; }
+.flow-leg .sign { font-weight: 700; }
+.flow-leg.out { color: var(--red); }
+.flow-leg.in { color: var(--green); }
+.flow-arrow { color: var(--ash); font-size: 18px; }
+.pool-tx-meta { margin-top: 9px; font-family: var(--mono); font-size: 11.5px; color: var(--ash); word-break: break-all; }
 
 /* ---- autonomous agent (live transcript) ---- */
 .agent { padding: 0; overflow: hidden; }
