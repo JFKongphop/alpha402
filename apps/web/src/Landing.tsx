@@ -89,8 +89,7 @@ export default function Landing({ onAsk }: { onAsk: (question: string) => void }
 
         <p className="l-sub">
           Whale flows and volume momentum from Uniswap (via The Graph), fused with macro news by AI
-          into one market read. <strong>Subscribe with an on-chain pass</strong> every answer settles on Hedera,
-          with a verifiable receipt.
+          into one market read. <strong>Subscribe with an on-chain pass</strong><br />every answer settles on Hedera, with a verifiable receipt.
         </p>
 
         <div className="l-chatbox">
@@ -104,7 +103,7 @@ export default function Landing({ onAsk }: { onAsk: (question: string) => void }
           />
           <div className="l-chatbar">
             <span className="l-model">Alpha · agentic</span>
-            <button className="l-send" onClick={() => ask()} aria-label="ask" title="Ask — subscribe to unlock">↑</button>
+            <button className="l-send" onClick={() => ask()} aria-label="ask" title="Ask — subscribe to unlock">▲</button>
           </div>
         </div>
 

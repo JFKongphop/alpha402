@@ -355,8 +355,8 @@ a.newsrow:hover .news-arrow { color: var(--ink); }
 /* accent words — matched orange + magenta-purple duo (shared warm undertone) */
 .l-title .grn { color: #ee7b3d; }  /* Alpha — orange */
 .l-title .blu { color: #b04fc7; }  /* Hedera — purple (warm, magenta-leaning) */
-.l-sub { font-size: 18px; line-height: 1.55; color: var(--ash); max-width: 640px; margin: 0; }
-.l-sub strong { color: var(--ink); font-weight: 600; }
+.l-sub { font-size: 18px; line-height: 1.55; color: var(--ash); max-width: 700px; margin: 0; }
+.l-sub strong { color: var(--ink); font-weight: 600; white-space: nowrap; }
 
 .l-chatbox { width: 100%; max-width: 680px; background: var(--white); border: 1px solid var(--hairline); border-radius: 18px; box-shadow: var(--shadow-card); padding: 18px 18px 12px; margin-top: 8px; text-align: left; }
 .l-input { width: 100%; border: 0; outline: 0; font-size: 18px; color: var(--ink); background: transparent; font-family: inherit; padding: 6px 4px; }
