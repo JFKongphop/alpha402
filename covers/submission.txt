@@ -1,0 +1,100 @@
+alpha402 — project description (ETHGlobal submission)
+Each section below maps to a field on the ETHGlobal submission form.
+Live: https://alpha402.fly.dev  ·  npm: https://www.npmjs.com/package/alpha402
+
+
+==============================================================
+1. NAME + TAGLINE
+==============================================================
+
+alpha402 — Market intelligence, priced for machines.
+
+
+==============================================================
+2. SHORT DESCRIPTION  (the hook — max 100 characters)
+==============================================================
+
+An on-chain market where AI agents pay for live signals on Hedera and act on Uniswap.
+
+==============================================================
+3. DESCRIPTION  (the full "what it does")
+==============================================================
+
+AI trading agents can't participate in markets on their own. Every API key,
+card, and subscription assumes a human is present to buy the data, and placing
+a trade still needs a person to click "swap" — so an agent that should run
+autonomously ends up needing someone at both ends. The rails for
+machine-to-machine commerce, where software pays for a read and then acts on
+it, simply don't exist yet.
+
+alpha402 builds those rails. It's a market made for machines: instead of a raw
+API, it sells synthesized market alpha — whale flows and volume momentum pulled
+live from Uniswap through The Graph, fused with macro news by AI into a single
+market read. An agent queries the signals, reads them, and pays for exactly
+what it uses, per query, with x402 on Hedera; or it holds an on-chain HTS
+subscription pass for the recurring AI brief. Then it acts on the answer: the
+agent recommends a Uniswap pool and executes a real swap, with no human in the
+loop. Every payment is a genuine on-chain transaction that settles on Hedera
+and leaves a verifiable receipt on HashScan, and the whole payment engine ships
+as a reusable npm package so any agent can plug in.
+
+The economics are part of the design. Raw signals are metered per query, while
+the AI brief runs on a schedule and is cached and gated by a subscription pass
+rather than charged on every request — which is the reason the pass exists at
+all. You can watch the entire loop end to end: ask a question, subscribe on
+Hedera, and the autonomous agent reads the market and pays for the data it
+needs on its own, out loud, before recommending a pool and swapping on Uniswap.
+Every "paid" line is a real settled transaction you can open on HashScan.
+
+
+==============================================================
+4. HOW IT'S MADE  (tech + sponsor integrations)
+==============================================================
+
+alpha402 is one pnpm monorepo, and data flows through it Uniswap to The Graph
+to AI to Hedera to pay, then back to Uniswap to invest. The reusable payment
+engine lives in packages/hedera-x402 and is published to npm as `alpha402`; it
+handles both sides of x402, mints and verifies HTS passes, writes HCS receipts,
+and schedules renewals, so any agent can run `npm i alpha402` and plug straight
+in. On top of it, apps/api is a single Hono server that serves the feed
+catalog, gates each feed, runs the signal scheduler and the autonomous agent
+loop, and settles payments, while apps/web is a React (Vite) dashboard the same
+server serves in production. The whole thing deploys as one Docker image on
+Fly.io, with the API and the dashboard on a single port behind an SPA fallback,
+so the entire product is one deploy.
+
+Hedera is the settlement core and roughly eighty percent of the build.
+Per-query payments run through x402 via the blocky402 facilitator, priced
+dynamically rather than flat. Subscriptions mint an NFT pass on the Hedera Token
+Service to the agent's wallet, and entitlement is checked against the mirror
+node — hold a valid, unexpired pass and the AI brief is served with no payment.
+Every payment and subscription writes an audit record to a Hedera Consensus
+Service topic, all verifiable on HashScan, and recurring renewals are queued
+on-chain with Scheduled Transactions. An autonomous buying agent completes real
+paid requests end to end.
+
+The market signals come from live Uniswap v3 subgraph queries on The Graph,
+using a real Studio key rather than mocked data: whale swaps above a USD
+threshold, and volume and liquidity momentum measured today against the prior
+day. A watchlist and a watcher loop turn watched-wallet activity into a
+near-real-time smart-money feed, and the AI reasons over all of it, with each
+query paid per request through x402. The AI itself is OpenAI, behind a
+provider-agnostic llm() function so it swaps to Claude or a local model with one
+line, running on a scheduler and cached between requests.
+
+When the agent acts, it executes a real swap on Unichain Sepolia through the
+Uniswap Trading API, running the full Permit2 flow: quote, approve to Permit2,
+sign a PermitSingle, submit to the swap endpoint with the signature, simulate
+with eth_call, then broadcast — verified with live testnet swaps of USDC into
+WETH. Two things fought back along the way. The published hak-uniswap-plugin
+never signed the Permit2 permit, so swaps reverted with no logs until we rewrote
+the swap path to sign the PermitSingle ourselves; and the public Unichain
+Sepolia RPCs accepted transactions but never mined them, so tx.wait hung until
+we moved to an RPC that actually confirms.
+
+Across the three sponsors it is one product. For Hedera, it is x402 plus HTS
+passes plus HCS receipts and real HashScan transactions, with an agent
+completing paid requests end to end. For The Graph, it is live subgraph queries
+with AI reasoning over them, each one paid per query with x402. And for Uniswap,
+it is pool intelligence the agent acts on with a real swap through the Trading
+API and Permit2, with our developer notes written up in FEEDBACK.md.
