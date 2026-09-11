@@ -67,8 +67,10 @@ function InvestCard({ pool }: { pool: PoolQuote }) {
   const [state, setState] = useState<"idle" | "loading" | "done" | "err">("idle");
   const [res, setRes] = useState<any>(null);
   const [wallet, setWallet] = useState<Wallet | null>(null);
+  const [collapsed, setCollapsed] = useState(false); // after a swap, shrink to just the bar
   useEffect(() => { fetch(`${BASE}/wallet`).then((r) => r.json()).then(setWallet).catch(() => {}); }, []);
   const funded = wallet?.funded === true;
+  const done = state === "done";
   async function invest() {
     setState("loading"); setRes(null);
     try {
@@ -77,42 +79,65 @@ function InvestCard({ pool }: { pool: PoolQuote }) {
         body: JSON.stringify({ token: pool.tokenOut, amountUsdc: Number(pool.amountIn) }),
       });
       const j = await r.json();
-      if (j.ok) { setState("done"); setRes(j); } else { setState("err"); setRes(j); }
+      if (j.ok) { setState("done"); setRes(j); setCollapsed(true); } else { setState("err"); setRes(j); }
     } catch (e) { setState("err"); setRes({ error: String(e) }); }
   }
   return (
-    <div className="pool">
+    <div className={`pool${collapsed ? " collapsed" : ""}`}>
       <div className="pool-head">
         <span className="pool-title">🦄 Uniswap · <TokenIcon sym={pool.tokenIn} />{pool.tokenIn} → <TokenIcon sym={pool.tokenOut} />{pool.tokenOut}</span>
-        <span className="badge soft">Unichain Sepolia</span>
+        <span className="pool-head-r">
+          <span className="badge soft">Unichain Sepolia</span>
+          <button className="pool-toggle" onClick={() => setCollapsed((c) => !c)}>{collapsed ? "Details ▾" : "Hide ▴"}</button>
+        </span>
       </div>
-      {wallet && (
-        <div className={`pool-wallet${funded ? " ok" : ""}`}>
-          <span className={`dot${funded ? " on" : ""}`} />
-          {!wallet.configured ? "agent wallet not configured"
-            : wallet.error ? "wallet status unavailable"
-            : funded ? `agent wallet funded · ${wallet.eth} ETH · ${wallet.usdc} USDC`
-            : `agent wallet unfunded · fund ${shortAddr(wallet.address)}`}
+
+      <div className="pool-body" aria-hidden={collapsed}>
+        <div className="pool-body-inner">
+          {wallet && (
+            <div className={`pool-wallet${funded ? " ok" : ""}`}>
+              <span className={`dot${funded ? " on" : ""}`} />
+              {!wallet.configured ? "agent wallet not configured"
+                : wallet.error ? "wallet status unavailable"
+                : funded ? `agent wallet funded · ${wallet.eth} ETH · ${wallet.usdc} USDC`
+                : `agent wallet unfunded · fund ${shortAddr(wallet.address)}`}
+            </div>
+          )}
+          <div className="pool-rows">
+            <PRow k="You pay" v={<><TokenIcon sym={pool.tokenIn} />{pool.amountIn} {pool.tokenIn}</>} />
+            <PRow k="You receive" v={<><TokenIcon sym={pool.tokenOut} />≈ {pool.amountOut} {pool.tokenOut}</>} />
+            <PRow k="Rate" v={`${pool.rate} ${pool.tokenOut}/${pool.tokenIn}`} />
+            <PRow k="Price impact" v={`${pool.priceImpact}%`} />
+            <PRow k="Min received" v={`${pool.minReceived} ${pool.tokenOut}`} />
+            <PRow k="Route" v={pool.route.length > 40 ? pool.route.slice(0, 40) + "…" : pool.route} />
+          </div>
         </div>
-      )}
-      <div className="pool-rows">
-        <PRow k="You pay" v={<><TokenIcon sym={pool.tokenIn} />{pool.amountIn} {pool.tokenIn}</>} />
-        <PRow k="You receive" v={<><TokenIcon sym={pool.tokenOut} />≈ {pool.amountOut} {pool.tokenOut}</>} />
-        <PRow k="Rate" v={`${pool.rate} ${pool.tokenOut}/${pool.tokenIn}`} />
-        <PRow k="Price impact" v={`${pool.priceImpact}%`} />
-        <PRow k="Min received" v={`${pool.minReceived} ${pool.tokenOut}`} />
-        <PRow k="Route" v={pool.route.length > 40 ? pool.route.slice(0, 40) + "…" : pool.route} />
       </div>
-      {state !== "done" && (
+
+      {!done && (
         <button className="btn dark pool-cta" onClick={invest} disabled={state === "loading" || !funded}>
           {state === "loading" ? "Swapping on Uniswap…" : funded ? `Invest ${pool.amountIn} ${pool.tokenIn} →` : "Fund the agent wallet to invest"}
         </button>
       )}
       {state === "err" && <div className="pool-err">Swap failed{res?.error ? `: ${res.error}` : ""}.</div>}
-      {state === "done" && (
-        <div className="pool-done">
-          ✓ Invested on Uniswap
-          {res?.explorer && <a className="scan" href={res.explorer} target="_blank" rel="noreferrer">tx ↗</a>}
+
+      {/* the swap result flow, under the details */}
+      {done && (
+        <div className="pool-tx">
+          <div className="pool-tx-head">
+            <span className="ok-badge">✓ Success</span>
+            <span className="pool-tx-net">Net transfers on Uniswap</span>
+            {res?.explorer && <a className="scan" href={res.explorer} target="_blank" rel="noreferrer">tx ↗</a>}
+          </div>
+          <div className="pool-flow">
+            <span className="flow-leg out"><span className="sign">−</span><TokenIcon sym={pool.tokenIn} />{pool.amountIn} {pool.tokenIn}</span>
+            <span className="flow-arrow">→</span>
+            <span className="flow-leg in"><span className="sign">+</span><TokenIcon sym={pool.tokenOut} />≈ {pool.amountOut} {pool.tokenOut}</span>
+          </div>
+          <div className="pool-tx-meta">
+            block {res?.blockNumber ?? "—"}
+            {res?.txHash ? ` · ${res.txHash.slice(0, 10)}…${res.txHash.slice(-6)}` : ""}
+          </div>
         </div>
       )}
     </div>
