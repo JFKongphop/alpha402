@@ -350,6 +350,16 @@ a.newsrow:hover .news-arrow { color: var(--ink); }
 @media (prefers-reduced-motion: reduce) { .blob { animation: none; } }
 .l-nav { display: flex; align-items: center; justify-content: space-between; width: 100%; max-width: 1120px; margin: 0 auto; padding: 22px 32px; }
 .l-hero { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; text-align: center; max-width: 840px; margin: 0 auto; padding: 30px 24px 72px; transform: translateY(-32px); }
+/* Sprout-style entrance: each hero piece fades + rises in, softly staggered on load */
+@keyframes riseIn { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+.l-hero > * { animation: riseIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.l-hero > .l-badge    { animation-delay: 0.05s; }
+.l-hero > .l-title    { animation-delay: 0.15s; }
+.l-hero > .l-sub      { animation-delay: 0.30s; }
+.l-hero > .l-chatbox  { animation-delay: 0.45s; }
+.l-hero > .l-chips    { animation-delay: 0.60s; }
+.l-hero > .l-statsbar { animation-delay: 0.72s; }
+@media (prefers-reduced-motion: reduce) { .l-hero > * { animation: none; } }
 .l-badge { display: inline-flex; align-items: center; gap: 8px; background: var(--white); border: 1px solid var(--hairline); border-radius: 999px; padding: 8px 16px; font-size: 13px; font-weight: 600; color: var(--ash); box-shadow: var(--shadow-btn); }
 .l-title { font-size: clamp(38px, 6.2vw, 74px); line-height: 1.02; letter-spacing: -0.03em; font-weight: 700; margin: 4px 0 0; color: var(--ink); }
 /* accent words — matched orange + magenta-purple duo (shared warm undertone) */
